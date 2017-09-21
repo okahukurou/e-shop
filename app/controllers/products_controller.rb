@@ -1,10 +1,22 @@
 class ProductsController < ApplicationController
-  before_action :set_product, only: [:show, :edit, :update, :destroy]
+  before_action :set_product, only: [:show, :edit, :update, :destroy, :pay]
 
   # GET /products
   # GET /products.json
   def index
     @products = Product.all
+  end
+
+  def pay
+    Payjp.api_key = 'sk_test_c62fade9d045b54cd76d7036'
+    charge = Payjp::Charge.create(
+      :amount => @product.price,
+      :card => params['payjp-token'],
+      :currency => 'jpy',
+    )
+    @product.stock -=1
+    @product.save
+    redirect_to @product, notice: "#{@product.price} yen. Thank you!"
   end
 
   # GET /products/1
